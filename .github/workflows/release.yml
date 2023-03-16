@@ -1,13 +1,14 @@
-name: Artifact
+name: Release
 
 on:
-  workflow_dispatch:
-  pull_request:
-    types: [opened, reopened]
+  push:
     branches: [master]
 
+permissions:
+  contents: write
+
 jobs:
-  artifact:
+  release:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
@@ -34,8 +35,10 @@ jobs:
           rm .gitignore
           rm .gitmodules
           python3 -m build
-      - name: Upload Artifact
-        uses: actions/upload-artifact@v3
+      - name: Create Release
+        uses: ncipollo/release-action@v1
+        id: create_release
         with:
-          name: onlyoffice.plone-${{ steps.info.outputs.version }}
-          path: ${{ github.workspace }}/dist/onlyoffice.plone-${{ steps.info.outputs.version }}.tar.gz
+          artifacts: "${{ github.workspace }}/dist/onlyoffice.plone-${{ steps.info.outputs.version }}.tar.gz"
+          bodyFile: RELEASE.md
+          tag: v${{ steps.info.outputs.version }}
